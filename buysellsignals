@@ -1,0 +1,39 @@
+
+strategy("RSI & MACD Options Trading Strategy", overlay=true)
+//RSI
+rsi_length = input(14, title="RSI Length")
+rsi_overbought = input(70, title="RSI Overbought Level")
+rsi_oversold = input(30, title="RSI Oversold Level")
+
+//  MACD
+macd_short = input(12, title="MACD Short Period")
+macd_long = input(26, title="MACD Long Period")
+macd_signal = input(9, title="MACD Signal Period")
+
+// Calculate RSI
+rsi = ta.rsi(close, rsi_length)
+
+// Calculate MACD
+[macdLine, signalLine, _] = ta.macd(close, macd_short, macd_long, macd_signal)
+macdHist = macdLine - signalLine
+
+// entry conditions for long position (buy call option)
+longCondition = rsi < rsi_oversold and macdHist > 0
+
+//  entry conditions for short position (buy put option)
+shortCondition = rsi > rsi_overbought and macdHist < 0
+
+// Execute trades
+if (longCondition)
+    strategy.entry("Buy Call", strategy.long)
+if (shortCondition)
+    strategy.entry("Buy Put", strategy.short)
+
+//  RSI and MACD plot for visual reference
+plot(rsi, title="RSI", color=color.blue, linewidth=2)
+hline(rsi_overbought, "Overbought", color=color.red)
+hline(rsi_oversold, "Oversold", color=color.green)
+
+plot(macdLine, title="MACD Line", color=color.orange)
+plot(signalLine, title="Signal Line", color=color.blue)
+hline(0, "Zero Line", color=color.gray)
